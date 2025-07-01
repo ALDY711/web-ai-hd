@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anime Image Upscaler</title>
+    <style>
+        body { font-family: sans-serif; background-color: #f4f4f9; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .container { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; max-width: 500px; width: 90%; }
+        h1 { color: #333; }
+        form { margin-bottom: 1.5rem; }
+        input[type="file"] { border: 1px solid #ddd; padding: 10px; border-radius: 4px; width: 95%; }
+        button { background-color: #007bff; color: white; border: none; padding: 12px 20px; border-radius: 4px; font-size: 16px; cursor: pointer; transition: background-color 0.3s; }
+        button:hover { background-color: #0056b3; }
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
+        #result-container { margin-top: 2rem; }
+        #result-container h2 { color: #444; }
+        #result-image { max-width: 100%; border-radius: 4px; margin-top: 1rem; border: 1px solid #eee; }
+        #loading { display: none; margin-top: 1rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Anime Image Upscaler ✨</h1>
+        <p>Unggah gambar anime untuk meningkatkan resolusinya.</p>
+        <form id="upload-form">
+            <input type="file" id="image-file" name="image_file" accept="image/png, image/jpeg, image/webp" required>
+            <br><br>
+            <button type="submit" id="submit-button">Tingkatkan Kualitas!</button>
+        </form>
+        <div id="loading">Memproses gambar, mohon tunggu... ⏳</div>
+        <div id="result-container" style="display:none;">
+            <h2>Hasil:</h2>
+            <a id="result-link" href="" target="_blank">
+                <img id="result-image" src="" alt="Hasil Upscaled">
+            </a>
+            <p><a id="download-link" href="" target="_blank">Lihat atau unduh gambar</a></p>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('upload-form');
+        const submitButton = document.getElementById('submit-button');
+        const loadingDiv = document.getElementById('loading');
+        const resultContainer = document.getElementById('result-container');
+        const resultImage = document.getElementById('result-image');
+        const resultLink = document.getElementById('result-link');
+        const downloadLink = document.getElementById('download-link');
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault(); // Mencegah form submit cara biasa
+
+            const formData = new FormData(form);
+
+            // Tampilkan loading dan nonaktifkan tombol
+            loadingDiv.style.display = 'block';
+            resultContainer.style.display = 'none';
+            submitButton.disabled = true;
+            submitButton.textContent = 'Memproses...';
+
+            try {
+                const response = await fetch('/upscale', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (!response.ok) {
+                    throw new Error('Gagal memproses gambar.');
+                }
+
+                const data = await response.json();
+
+                // Tampilkan hasil
+                resultImage.src = data.imageUrl;
+                resultLink.href = data.imageUrl;
+                downloadLink.href = data.imageUrl;
+                resultContainer.style.display = 'block';
+
+            } catch (error) {
+                console.error(error);
+                alert('Terjadi kesalahan. Coba lagi.');
+            } finally {
+                // Sembunyikan loading dan aktifkan kembali tombol
+                loadingDiv.style.display = 'none';
+                submitButton.disabled = false;
+                submitButton.textContent = 'Tingkatkan Kualitas!';
+            }
+        });
+    </script>
+</body>
+</html>
